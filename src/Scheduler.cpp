@@ -30,6 +30,21 @@ bool Scheduler::cancel(int16_t id)
     return false;
 }
 
+void Scheduler::scheduleAt(int16_t id, TimerCallback cb, u_long time, bool retain)
+{
+    schedule(id, cb, time, true, retain);
+}
+
+void Scheduler::scheduleEvery(int16_t id, TimerCallback cb, u_long time)
+{
+    schedule(id, cb, time, false, true);
+}
+
+void Scheduler::scheduleInOnce(int16_t id, TimerCallback cb, u_long time)
+{
+    schedule(id, cb, mCurrentTimestamp + time, true, false);
+}
+
 void Scheduler::loop()
 {
     runRealtimeSchedule();

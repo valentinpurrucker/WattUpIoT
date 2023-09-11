@@ -44,6 +44,12 @@ public:
 
     bool cancel(int16_t id);
 
+    void scheduleAt(int16_t id, TimerCallback cb, u_long time, bool retain);
+
+    void scheduleEvery(int16_t id, TimerCallback cb, u_long time);
+
+    void scheduleInOnce(int16_t id, TimerCallback cb, u_long time);
+
     void scheduleRealtime(int16_t id, RealtimeScheduleCallback cb);
 
     void loop();
