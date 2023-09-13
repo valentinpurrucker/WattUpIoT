@@ -45,6 +45,17 @@ void Scheduler::scheduleInOnce(int16_t id, TimerCallback cb, u_long time)
     schedule(id, cb, mCurrentTimestamp + time, true, false);
 }
 
+void Scheduler::setTimestamp(u_long timestamp)
+{
+    D_Printf("Updated timestamp to: %lu", timestamp);
+    mCurrentTimestamp = timestamp;
+}
+
+int Scheduler::getTimestamp()
+{
+    return mCurrentTimestamp;
+}
+
 void Scheduler::loop()
 {
     runRealtimeSchedule();

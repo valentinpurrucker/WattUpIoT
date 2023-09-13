@@ -52,6 +52,10 @@ public:
 
     void scheduleRealtime(int16_t id, RealtimeScheduleCallback cb);
 
+    void setTimestamp(u_long timestamp);
+
+    int getTimestamp();
+
     void loop();
 
 private:
