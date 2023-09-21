@@ -31,6 +31,8 @@ public:
     void setup();
     void loop();
 
+    void publish(char *topic, char *payload);
+
     OnConnectedCallback mOnConnectedHandler;
 
 private:

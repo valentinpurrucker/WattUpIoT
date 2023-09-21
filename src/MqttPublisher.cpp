@@ -61,6 +61,16 @@ void MqttPublisher::loop()
     }
 }
 
+void MqttPublisher::publish(char *topic, char *payload)
+{
+    if (mCurrentState != MqttConnected)
+    {
+        return;
+    }
+
+    mClient.publish(topic, 1, true, payload);
+}
+
 // PRIVATE:
 
 void MqttPublisher::onMqttConnected(bool sessionPresent)
