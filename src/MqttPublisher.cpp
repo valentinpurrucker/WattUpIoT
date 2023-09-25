@@ -13,12 +13,15 @@ MqttPublisher::MqttPublisher()
 
 void MqttPublisher::setup()
 {
+    mConnectedHandler = WiFi.onStationModeGotIP(std::bind(&MqttPublisher::onWiFiConnected, this, std::placeholders::_1));
+    mDisconnectedHandler = WiFi.onStationModeDisconnected(std::bind(&MqttPublisher::onWiFiDisconnected, this, std::placeholders::_1));
 
     mClient.setServer(STR(MQTT_ADDRESS), MQTT_PORT);
     mClient.setCredentials(STR(MQTT_USER), STR(MQTT_PASSWORD));
     mClient.setClientId(STR(MQTT_CLIENT));
     mClient.onConnect(std::bind(&MqttPublisher::onMqttConnected, this, std::placeholders::_1));
     mClient.onDisconnect(std::bind(&MqttPublisher::onMqttDisconnected, this, std::placeholders::_1));
+    mClient.onPublish(std::bind(&MqttPublisher::onMqttPublish, this, std::placeholders::_1));
 
     checkWiFi();
 }
@@ -40,7 +43,6 @@ void MqttPublisher::loop()
         connectMqtt();
         break;
     case WifiDisconnected:
-        checkWiFi();
         break;
 
     case MqttConnected:
@@ -73,6 +75,16 @@ void MqttPublisher::publish(char *topic, char *payload)
 
 // PRIVATE:
 
+void MqttPublisher::onWiFiConnected(const WiFiEventStationModeGotIP &event)
+{
+    mCurrentState = WifiConnected;
+}
+
+void MqttPublisher::onWiFiDisconnected(const WiFiEventStationModeDisconnected &event)
+{
+    mCurrentState = WifiDisconnected;
+}
+
 void MqttPublisher::onMqttConnected(bool sessionPresent)
 {
     mCurrentState = MqttConnected;
@@ -87,6 +99,10 @@ void MqttPublisher::onMqttDisconnected(espMqttClientTypes::DisconnectReason reas
 {
     mCurrentState = MqttDisconnected;
     mTimeoutReconnectTimerTs = millis();
+}
+
+void MqttPublisher::onMqttPublish(uint16_t packetId)
+{
 }
 
 void MqttPublisher::checkWiFi()

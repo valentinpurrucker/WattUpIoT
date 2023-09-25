@@ -36,9 +36,15 @@ public:
     OnConnectedCallback mOnConnectedHandler;
 
 private:
+    void onWiFiConnected(const WiFiEventStationModeGotIP &event);
+
+    void onWiFiDisconnected(const WiFiEventStationModeDisconnected &event);
+
     void onMqttConnected(bool sessionPresent);
 
     void onMqttDisconnected(espMqttClientTypes::DisconnectReason reason);
+
+    void onMqttPublish(uint16_t packetId);
 
     void checkWiFi();
 
@@ -51,6 +57,9 @@ private:
     espMqttClient mClient;
 
     MqttState mCurrentState = Uninitialized;
+
+    WiFiEventHandler mConnectedHandler;
+    WiFiEventHandler mDisconnectedHandler;
 
     int mLastConnectionAttemptTs = 0;
     int mTimeoutReconnectTimerTs = 0;
