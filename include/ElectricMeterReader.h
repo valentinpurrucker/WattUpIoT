@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 
 struct ObisCode
 {
@@ -11,6 +12,13 @@ struct ObisCode
     int8_t measurementType;
     int8_t tarrif;
     int8_t other;
+};
+
+struct EnergyData
+{
+    double positiveEnergy = 0;
+    double negativEnergy = 0;
+    double currentPower = 0;
 };
 
 class ElectricMeterReader
@@ -55,8 +63,64 @@ public:
 
     bool update();
 
+    void reset();
+
+    void read();
+
+    void wait();
+
+    void sendDataIfAvailable();
+
+    void printMeterState();
+    void printReadingState();
+
+    std::function<void()> mOnDataReadCallback;
+
 private:
+    void resetReadingState();
+
+    bool readSmlData();
+
+    void readStartSequence();
+
+    void readMessage();
+
+    void readChecksum();
+
+    bool checkTimeout();
+
+    void updateEnergyData(std::optional<EnergyData> &data, EnergyMeterObisCodeType type, double value);
+
+    ObisCode getObisCodeFromType(EnergyMeterObisCodeType type);
+
+    std::optional<EnergyMeterObisCodeType> getEnergyMeterObisCodeTypeFromCode(ObisCode &&code);
+
+    const char *getTypeStringFromObisType(EnergyMeterObisCodeType type);
+
     EnergyMeterState mCurrentState = Uninitialized;
 
     ReadingState mReadingState = NotReady;
+
+    std::unique_ptr<SoftwareSerial> mEMeterSerial;
+
+    int mLastReadingStartTs = -1;
+
+    int mBaudRate = 9600;
+
+    int mCurrentBufferPosition = 0;
+
+    int mChecksumByteNumber = 3;
+
+    int mBufferSize = 0;
+
+    bool mDataReadCallbackCalled = false;
+
+    bool mDataAvailableToSend = false;
+
+    bool mDataParsed = false;
+
+    std::unique_ptr<byte[]>
+        mBuffer;
+
+    std::optional<EnergyData> mCurrentData = std::nullopt;
 };
