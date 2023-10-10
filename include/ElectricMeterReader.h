@@ -4,6 +4,9 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
+#include "MqttPublisher.h"
+#include "Scheduler.h"
+
 struct ObisCode
 {
     int8_t mediumCode;
@@ -58,6 +61,10 @@ public:
         ReadingFinished,
         Timeout,
     };
+
+    ElectricMeterReader(Scheduler &scheduler);
+
+    ElectricMeterReader(MqttPublisher *mqtt, Scheduler &scheduler);
 
     void setup();
 
@@ -123,4 +130,8 @@ private:
         mBuffer;
 
     std::optional<EnergyData> mCurrentData = std::nullopt;
+
+    MqttPublisher *mMqtt;
+
+    Scheduler &mScheduler;
 };
