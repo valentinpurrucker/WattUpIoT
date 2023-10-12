@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+#include <sml/sml_file.h>
 
 #include "MqttPublisher.h"
 #include "Scheduler.h"
@@ -95,6 +96,8 @@ private:
     void readChecksum();
 
     bool checkTimeout();
+
+    void parseSmlData();
 
     void updateEnergyData(std::optional<EnergyData> &data, EnergyMeterObisCodeType type, double value);
 
