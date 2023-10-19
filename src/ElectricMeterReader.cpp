@@ -44,7 +44,17 @@ bool ElectricMeterReader::update()
     case EnergyMeterState::Reading:
         break;
     case EnergyMeterState::DataRead:
-        parseSmlData();
+        if (!mDataParsed)
+        {
+            parseSmlData();
+            mDataParsed = true;
+        }
+        if (mOnDataReadCallback && !mDataReadCallbackCalled)
+        {
+            mOnDataReadCallback();
+            mDataReadCallbackCalled = true;
+        }
+        reset();
         break;
     }
 
