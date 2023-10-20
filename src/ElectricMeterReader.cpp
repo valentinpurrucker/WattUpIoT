@@ -54,7 +54,7 @@ bool ElectricMeterReader::update()
             mOnDataReadCallback();
             mDataReadCallbackCalled = true;
         }
-        reset();
+        resetReadingState();
         break;
     }
 
@@ -85,7 +85,7 @@ void ElectricMeterReader::read()
 void ElectricMeterReader::wait()
 {
     D_Println(F("Reset waiting"));
-    reset();
+    resetReadingState();
     mDataReadCallbackCalled = false;
     mCurrentState = Waiting;
 }
@@ -136,6 +136,8 @@ void ElectricMeterReader::resetReadingState()
 {
     mLastReadingStartTs = -1;
     mCurrentBufferPosition = 0;
+    mChecksumByteNumber = 3;
+    mReadingState = ReadingState::ReadingStart;
 }
 
 bool ElectricMeterReader::readSmlData()
