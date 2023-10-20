@@ -92,6 +92,11 @@ void ElectricMeterReader::wait()
 
 void ElectricMeterReader::sendDataIfAvailable()
 {
+    if (!mDataAvailableToSend)
+    {
+        return;
+    }
+
     if (!mCurrentData.has_value())
     {
         D_Println(F("No data to send"));
