@@ -142,14 +142,18 @@ void ElectricMeterReader::resetReadingState()
 
 bool ElectricMeterReader::readSmlData()
 {
+    if (!checkTimeout() && mReadingState != ReadingFinished)
+    {
+        mReadingState = Timeout;
+    }
 
 #if (MODE_SERIAL == 0)
-    if (!Serial.available())
+    if (!Serial.available() && mReadingState != ReadingFinished)
     {
         return true;
     }
 #else
-    if (!mEMeterSerial->available())
+    if (!mEMeterSerial->available() && mReadingState != ReadingFinished)
     {
         return true;
     }
@@ -175,7 +179,7 @@ bool ElectricMeterReader::readSmlData()
         break;
     case ReadingState::Timeout:
         D_Println(F("Timeout"));
-        reset();
+        resetReadingState();
     }
 
     return true;
@@ -196,6 +200,10 @@ void ElectricMeterReader::readStartSequence()
         if (mBuffer[mCurrentBufferPosition] == SML_START_SEQ[mCurrentBufferPosition])
         {
             mCurrentBufferPosition++;
+        }
+        else
+        {
+            resetReadingState();
         }
 
         if (mCurrentBufferPosition == sizeof(SML_START_SEQ))
@@ -220,6 +228,7 @@ void ElectricMeterReader::readMessage()
     {
         if ((mCurrentBufferPosition + 3) == mBufferSize)
         {
+            resetReadingState();
             return;
         }
         mBuffer[mCurrentBufferPosition++] = b;
@@ -257,6 +266,7 @@ void ElectricMeterReader::readChecksum()
     if (mChecksumByteNumber == 0)
     {
         mReadingState = ReadingFinished;
+        mLastReadingStartTs = -1;
     }
 }
 
