@@ -31,7 +31,6 @@ void ElectricMeterReader::setup()
 
 bool ElectricMeterReader::update()
 {
-
     switch (mCurrentState)
     {
     case EnergyMeterState::Uninitialized:
@@ -181,9 +180,11 @@ bool ElectricMeterReader::readSmlData()
         mCurrentState = EnergyMeterState::DataRead;
         mDataAvailableToSend = true;
         mDataParsed = false;
+        mDataReadCallbackCalled = false;
         break;
     case ReadingState::Timeout:
         D_Println(F("Timeout"));
+        mDataReadCallbackCalled = false;
         resetReadingState();
     }
 
