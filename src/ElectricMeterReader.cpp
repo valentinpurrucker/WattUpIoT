@@ -88,6 +88,11 @@ void ElectricMeterReader::wait()
     resetReadingState();
     mDataReadCallbackCalled = false;
     mCurrentState = Waiting;
+    int d;
+    while (mEMeterSerial->available() > 0)
+    {
+        d = mEMeterSerial->read();
+    }
 }
 
 void ElectricMeterReader::sendDataIfAvailable()
@@ -358,6 +363,7 @@ void ElectricMeterReader::parseSmlData()
             D_Println("----------------------");
         }
     }
+    sml_file_free(file);
 }
 
 ObisCode ElectricMeterReader::getObisCodeFromType(EnergyMeterObisCodeType type)
