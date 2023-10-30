@@ -1,51 +1,48 @@
 #pragma once
 
 #include <Arduino.h>
-#include <WiFiUdp.h>
 #include <ESP8266WiFi.h>
+#include <WiFiUdp.h>
 
-class NtpClient
-{
+class NtpClient {
+ public:
+  static const size_t NTP_PACKET_SIZE = 48;
+  static const u_long UNIX_TIMESTAMP_OFFSET = 2208988800UL;
+  static const u_long TIMEOUT_SEC = 5000;
 
-public:
-    static const size_t NTP_PACKET_SIZE = 48;
-    static const u_long UNIX_TIMESTAMP_OFFSET = 2208988800UL;
-    static const u_long TIMEOUT_SEC = 5000;
+  enum NtpClientState {
+    Uninitialized,
+    UdpSetup,
+    AwaitingTimeResponse,
+    SendingTimeRequest,
+    TimeAvailable,
+    Timeout,
+  };
 
-    enum NtpClientState
-    {
-        Uninitialized,
-        UdpSetup,
-        AwaitingTimeResponse,
-        SendingTimeRequest,
-        TimeAvailable,
-        Timeout,
-    };
+  void setup();
 
-    void setup();
+  void update();
 
-    void update();
+  void requestTime();
 
-    void requestTime();
+  u_long getUnixTimestamp();
 
-    u_long getUnixTimestamp();
+  std::function<void(u_long)> mOnTimeReceivedCb;
 
-    std::function<void(u_long)> mOnTimeReceivedCb;
+ private:
+  void waitForTimeResponse();
 
-private:
-    void waitForTimeResponse();
+  bool checkTimeout();
 
-    bool checkTimeout();
+  void sendNtpRequest();
 
-    void sendNtpRequest();
+  NtpClientState mCurrentState = Uninitialized;
 
-    NtpClientState mCurrentState = Uninitialized;
+  WiFiUDP mUdp{};
 
-    WiFiUDP mUdp{};
+  byte mBuffer[NTP_PACKET_SIZE]{};
 
-    byte mBuffer[NTP_PACKET_SIZE]{};
+  u_long mTimestamp = 0;
 
-    u_long mTimestamp = 0;
-
-    u_long mRequestTimestamp;
+  u_long mRequestTimestamp;
 };

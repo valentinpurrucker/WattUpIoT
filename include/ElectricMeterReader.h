@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <memory.h>
+
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <sml/sml_file.h>
@@ -8,133 +10,125 @@
 #include "MqttPublisher.h"
 #include "Scheduler.h"
 
-struct ObisCode
-{
-    int8_t mediumCode;
-    int8_t channel;
-    int8_t physicalUnit;
-    int8_t measurementType;
-    int8_t tarrif;
-    int8_t other;
+struct ObisCode {
+  int8_t mediumCode;
+  int8_t channel;
+  int8_t physicalUnit;
+  int8_t measurementType;
+  int8_t tarrif;
+  int8_t other;
 };
 
-struct EnergyData
-{
-    double positiveEnergy = 0;
-    double negativEnergy = 0;
-    double currentPower = 0;
+struct EnergyData {
+  double positiveEnergy = 0;
+  double negativEnergy = 0;
+  double currentPower = 0;
 };
 
-class ElectricMeterReader
-{
+class ElectricMeterReader {
+ public:
+  static const int MAX_TRANSMISSION_DURATION_MS;
+  static const int MAX_READ_TIME;
 
-public:
-    static const int MAX_TRANSMISSION_DURATION_MS;
-    static const int MAX_READ_TIME;
+  static const byte SML_START_SEQ[8];
+  static const byte SML_END_SEQ[5];
 
-    static const byte SML_START_SEQ[8];
-    static const byte SML_END_SEQ[5];
+  enum EnergyMeterObisCodeType {
+    MANUFACTURER,
+    DEVICE_ID,
+    ENERGY_POSITIVE,
+    ENERGY_NEGATIV,
+    CURRENT_ACTIVE_POWER
+  };
 
-    enum EnergyMeterObisCodeType
-    {
-        MANUFACTURER,
-        DEVICE_ID,
-        ENERGY_POSITIVE,
-        ENERGY_NEGATIV,
-        CURRENT_ACTIVE_POWER
-    };
+  enum EnergyMeterState {
+    Uninitialized,
+    Idle,
+    Waiting,
+    Reading,
+    DataRead,
+  };
 
-    enum EnergyMeterState
-    {
-        Uninitialized,
-        Idle,
-        Waiting,
-        Reading,
-        DataRead,
-    };
+  enum ReadingState {
+    NotReady,
+    ReadingStart,
+    ReadingMessage,
+    ReadingChecksum,
+    ReadingFinished,
+    Timeout,
+  };
 
-    enum ReadingState
-    {
-        NotReady,
-        ReadingStart,
-        ReadingMessage,
-        ReadingChecksum,
-        ReadingFinished,
-        Timeout,
-    };
+  ElectricMeterReader(MqttPublisher &mqtt, Scheduler &scheduler);
 
-    ElectricMeterReader(Scheduler &scheduler);
+  void setup();
 
-    ElectricMeterReader(MqttPublisher *mqtt, Scheduler &scheduler);
+  bool update();
 
-    void setup();
+  void reset();
 
-    bool update();
+  void read();
 
-    void reset();
+  void wait();
 
-    void read();
+  void sendDataIfAvailable();
 
-    void wait();
+  void printMeterState();
+  void printReadingState();
 
-    void sendDataIfAvailable();
+  std::function<void()> mOnDataReadCallback;
 
-    void printMeterState();
-    void printReadingState();
+ private:
+  void resetReadingState();
 
-    std::function<void()> mOnDataReadCallback;
+  bool readSmlData();
 
-private:
-    void resetReadingState();
+  void readStartSequence();
 
-    bool readSmlData();
+  void readMessage();
 
-    void readStartSequence();
+  void readChecksum();
 
-    void readMessage();
+  bool checkTimeout();
 
-    void readChecksum();
+  void parseSmlData();
 
-    bool checkTimeout();
+  void updateEnergyData(std::optional<EnergyData> &data,
+                        EnergyMeterObisCodeType type, double value);
 
-    void parseSmlData();
+  ObisCode getObisCodeFromType(EnergyMeterObisCodeType type);
 
-    void updateEnergyData(std::optional<EnergyData> &data, EnergyMeterObisCodeType type, double value);
+  std::optional<EnergyMeterObisCodeType> getEnergyMeterObisCodeTypeFromCode(
+      ObisCode &&code);
 
-    ObisCode getObisCodeFromType(EnergyMeterObisCodeType type);
+  const char *getTypeStringFromObisType(EnergyMeterObisCodeType type);
 
-    std::optional<EnergyMeterObisCodeType> getEnergyMeterObisCodeTypeFromCode(ObisCode &&code);
+  EnergyMeterState mCurrentState = Uninitialized;
 
-    const char *getTypeStringFromObisType(EnergyMeterObisCodeType type);
+  ReadingState mReadingState = NotReady;
 
-    EnergyMeterState mCurrentState = Uninitialized;
+  std::unique_ptr<SoftwareSerial> mEMeterSerial;
 
-    ReadingState mReadingState = NotReady;
+  int mLastReadingStartTs = -1;
 
-    std::unique_ptr<SoftwareSerial> mEMeterSerial;
+  int mBaudRate = 9600;
 
-    int mLastReadingStartTs = -1;
+  int mCurrentBufferPosition = 0;
 
-    int mBaudRate = 9600;
+  int mChecksumByteNumber = 3;
 
-    int mCurrentBufferPosition = 0;
+  int mBufferSize = 0;
 
-    int mChecksumByteNumber = 3;
+  bool mDataReadCallbackCalled = false;
 
-    int mBufferSize = 0;
+  bool mDataAvailableToSend = false;
 
-    bool mDataReadCallbackCalled = false;
+  bool mDataParsed = false;
 
-    bool mDataAvailableToSend = false;
+  std::unique_ptr<byte[]> mBuffer;
 
-    bool mDataParsed = false;
+  std::optional<EnergyData> mCurrentData = std::nullopt;
 
-    std::unique_ptr<byte[]>
-        mBuffer;
+  MqttPublisher &mMqtt;
 
-    std::optional<EnergyData> mCurrentData = std::nullopt;
-
-    MqttPublisher *mMqtt;
-
-    Scheduler &mScheduler;
+  Scheduler &mScheduler;
 };

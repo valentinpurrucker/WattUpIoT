@@ -3,24 +3,18 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 
-class OtaController
-{
-public:
-    enum OtaControllerState
-    {
-        Uninitialized,
-        Setup
-    };
+class OtaController {
+ public:
+  enum OtaControllerState { Uninitialized, Setup };
 
-    void
-    setup();
+  void setup();
 
-    void loop();
+  void loop();
 
-private:
-    void handleOtaStart();
-    void handleOtaProgress(size_t current, size_t final);
-    void handleOtaEnd();
+ private:
+  void handleOtaStart();
+  void handleOtaProgress(size_t current, size_t final);
+  void handleOtaEnd();
 
-    OtaControllerState mCurrentState{Uninitialized};
+  OtaControllerState mCurrentState{Uninitialized};
 };

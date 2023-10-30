@@ -11,16 +11,12 @@
 #define D false
 #endif
 
-#define D_Println(...)                   \
-    do                                   \
-    {                                    \
-        if (D)                           \
-            Serial.println(__VA_ARGS__); \
-    } while (0)
+#define D_Println(...)                  \
+  do {                                  \
+    if (D) Serial.println(__VA_ARGS__); \
+  } while (0)
 
-#define D_Printf(...)                   \
-    do                                  \
-    {                                   \
-        if (D)                          \
-            Serial.printf(__VA_ARGS__); \
-    } while (0)
+#define D_Printf(...)                  \
+  do {                                 \
+    if (D) Serial.printf(__VA_ARGS__); \
+  } while (0)

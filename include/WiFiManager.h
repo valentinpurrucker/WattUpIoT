@@ -3,53 +3,50 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
-class WifiManager
-{
+class WifiManager {
+  using OnConnectedCallback = std::function<void()>;
 
-    using OnConnectedCallback = std::function<void()>;
+ public:
+  enum WiFiState {
+    Uninitialized,
+    Connected,
+    Disconnected,
+    Connecting,
+    Timeout,
+    Failed
+  };
 
-public:
-    enum WiFiState
-    {
-        Uninitialized,
-        Connected,
-        Disconnected,
-        Connecting,
-        Timeout,
-        Failed
-    };
+  WifiManager();
 
-    WifiManager();
+  void setup();
 
-    void setup();
+  void loop();
 
-    void loop();
+  bool isConnected();
 
-    bool isConnected();
+  bool addConnectionHandler(OnConnectedCallback onConnected);
 
-    bool addConnectionHandler(OnConnectedCallback onConnected);
+  OnConnectedCallback mOnConnectedHandlers[10];
 
-    OnConnectedCallback mOnConnectedHandlers[10];
+ private:
+  void connectWiFi();
 
-private:
-    void connectWiFi();
+  void onDisconnect(const WiFiEventStationModeDisconnected &event);
 
-    void onDisconnect(const WiFiEventStationModeDisconnected &event);
+  void onGotIP(const WiFiEventStationModeGotIP &event);
 
-    void onGotIP(const WiFiEventStationModeGotIP &event);
+  void checkTimeout();
 
-    void checkTimeout();
+  void reconnect();
 
-    void reconnect();
+  WiFiClient mClient;
 
-    WiFiClient mClient;
+  WiFiState mCurrentState = WiFiState::Uninitialized;
 
-    WiFiState mCurrentState = WiFiState::Uninitialized;
+  WiFiEventHandler mConnectedHandler;
+  WiFiEventHandler mDisconnectedHandler;
 
-    WiFiEventHandler mConnectedHandler;
-    WiFiEventHandler mDisconnectedHandler;
+  int mLastConnectionAttemptTs = 0;
 
-    int mLastConnectionAttemptTs = 0;
-
-    int mReconnectCounter = 0;
+  int mReconnectCounter = 0;
 };
