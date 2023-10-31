@@ -15,6 +15,7 @@ on:
       - "**.cpp"
       - "**.c"
       - "**.h"
+  workflow_dispatch:
 
 jobs:
   lint:
