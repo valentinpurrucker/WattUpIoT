@@ -1,0 +1,28 @@
+name: Test - Execute the CPP unit-tests
+
+on: 
+    pull_request:
+        branches:
+            - main
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+
+      - name: Test Unit test environment
+        run: |
+          if [$(find test/ -type f -name "test*.cpp" | wc -l) -gt 0 ]; \
+          then pio test -e unittest; fi
