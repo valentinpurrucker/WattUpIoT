@@ -6,6 +6,7 @@
 
 const unsigned long MAX_MILLIS = std::numeric_limits<unsigned long>().max();
 
+
 using TimerCallback = std::function<void()>;
 using RealtimeScheduleCallback = std::function<bool()>;
 
@@ -39,8 +40,9 @@ class Scheduler {
  public:
   static const int8_t SCHEDULED_TIMER_NUMBER = 8;
   static const int8_t SCHEDULED_REALTIME_NUMBER = 2;
+  static const int TASK_SCHEDULE_INTERVAL = 1000;
 
-  Scheduler();
+  Scheduler() = default;
 
   void schedule(int16_t id, TimerCallback cb, u_long time, bool isTimestamp,
                 bool retain);
@@ -57,7 +59,7 @@ class Scheduler {
 
   void setTimestamp(u_long timestamp);
 
-  int getTimestamp();
+  u_long getTimestamp();
 
   void loop();
 

@@ -1,10 +1,9 @@
 
 #pragma once
 
-#include <memory.h>
-
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+#include <memory.h>
 #include <sml/sml_file.h>
 
 #include "MqttPublisher.h"
@@ -95,12 +94,12 @@ class ElectricMeterReader {
   void updateEnergyData(std::optional<EnergyData> &data,
                         EnergyMeterObisCodeType type, double value);
 
-  ObisCode getObisCodeFromType(EnergyMeterObisCodeType type);
+  static ObisCode getObisCodeFromType(EnergyMeterObisCodeType type);
 
-  std::optional<EnergyMeterObisCodeType> getEnergyMeterObisCodeTypeFromCode(
-      ObisCode &&code);
+  static std::optional<EnergyMeterObisCodeType>
+  getEnergyMeterObisCodeTypeFromCode(ObisCode &&code);
 
-  const char *getTypeStringFromObisType(EnergyMeterObisCodeType type);
+  static const char *getTypeStringFromObisType(EnergyMeterObisCodeType type);
 
   EnergyMeterState mCurrentState = Uninitialized;
 

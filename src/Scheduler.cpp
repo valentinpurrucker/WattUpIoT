@@ -2,8 +2,6 @@
 
 // PUBLIC:
 
-Scheduler::Scheduler() {}
-
 void Scheduler::schedule(int16_t id, TimerCallback cb, u_long time,
                          bool isTimestamp, bool retain) {
   for (int i = 0; i < SCHEDULED_TIMER_NUMBER; i++) {
@@ -43,14 +41,14 @@ void Scheduler::setTimestamp(u_long timestamp) {
   mCurrentTimestamp = timestamp;
 }
 
-int Scheduler::getTimestamp() { return mCurrentTimestamp; }
+u_long Scheduler::getTimestamp() { return mCurrentTimestamp; }
 
 void Scheduler::loop() {
   runRealtimeSchedule();
 
-  u_long m = (long)millis();
+  u_long m = static_cast<long>(millis());
 
-  long diff;
+  long diff = 0;
 
   if (m < mPreviousTime) {
     diff = MAX_MILLIS - mPreviousTime + m;
@@ -58,7 +56,7 @@ void Scheduler::loop() {
     diff = m - mPreviousTime;
   }
 
-  if (diff < 1000) {
+  if (diff < TASK_SCHEDULE_INTERVAL) {
     return;
   }
 
@@ -66,7 +64,7 @@ void Scheduler::loop() {
 
   mPreviousTime = m;
 
-  mCurrentTimestamp += mDiff / 1000;
+  mCurrentTimestamp += mDiff / TASK_SCHEDULE_INTERVAL;
 
   D_Println(mCurrentTimestamp);
 

@@ -24,8 +24,7 @@ class MqttPublisher {
     MqttConnectionTimeout
   };
 
-  MqttPublisher();
-  MqttPublisher(Scheduler &scheduler);
+  MqttPublisher() = default;
 
   void setup();
   void loop();

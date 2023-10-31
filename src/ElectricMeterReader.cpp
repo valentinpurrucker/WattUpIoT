@@ -77,9 +77,8 @@ void ElectricMeterReader::wait() {
   resetReadingState();
   mDataReadCallbackCalled = false;
   mCurrentState = Waiting;
-  int d;
   while (mEMeterSerial->available() > 0) {
-    d = mEMeterSerial->read();
+    mEMeterSerial->read();
   }
 }
 
@@ -102,10 +101,10 @@ void ElectricMeterReader::sendDataIfAvailable() {
 
   sprintf(pE, "%.1f", mCurrentData.value().positiveEnergy);
   sprintf(cP, "%.0f", mCurrentData.value().currentPower);
-  sprintf(timeStr, "%d", mScheduler.getTimestamp());
+  sprintf(timeStr, "%ld", mScheduler.getTimestamp());
 
-  sprintf(s, "{\"time\":%s,\"energy\":{\"power\":%s,\"total\":%s}}", timeStr,
-          cP, pE);
+  sprintf(s, R"({"time":%s,"energy":{"power":%s,"total":%s}})", timeStr, cP,
+          pE);
 
   D_Println(s);
 
@@ -193,7 +192,6 @@ void ElectricMeterReader::readStartSequence() {
     }
     return;
   }
-  return;
 }
 
 void ElectricMeterReader::readMessage() {
@@ -265,7 +263,7 @@ void ElectricMeterReader::parseSmlData() {
       sml_get_list_response *body;
       body = reinterpret_cast<sml_get_list_response *>(
           message->message_body->data);
-      for (entry = body->val_list; entry != NULL; entry = entry->next) {
+      for (entry = body->val_list; entry != nullptr; entry = entry->next) {
         if (!entry->value) {  // do not crash on null value
           continue;
         }
@@ -281,8 +279,8 @@ void ElectricMeterReader::parseSmlData() {
             getEnergyMeterObisCodeTypeFromCode(std::move(code));
 
         if (entry->value->type == SML_TYPE_OCTET_STRING) {
-          // char *str;
-          // free(str);
+          char *str;
+          free(str);
         } else if (entry->value->type == SML_TYPE_BOOLEAN) {
           /*
           D_Printf("%d-%d:%d.%d.%d*%d#%s#\n",
@@ -305,9 +303,10 @@ void ElectricMeterReader::parseSmlData() {
                    entry->obj_name->str[3], entry->obj_name->str[4],
                    entry->obj_name->str[5], prec, value);
 
-          const char *unit = NULL;
+          const char *unit = nullptr;
           if (entry->unit &&  // do not crash on null (unit is optional)
-              (unit = dlms_get_unit((unsigned char)*entry->unit)) != NULL) {
+              (unit = dlms_get_unit(
+                   static_cast<unsigned char>(*entry->unit))) != nullptr) {
             D_Printf(PSTR("%s"), unit);
             D_Println();
           }

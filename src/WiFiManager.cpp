@@ -8,7 +8,6 @@
 #include "Debug.h"
 
 // PUBLIC:
-WifiManager::WifiManager() {}
 
 void WifiManager::loop() {
   switch (mCurrentState) {
@@ -43,7 +42,7 @@ void WifiManager::loop() {
 bool WifiManager::isConnected() { return mCurrentState == Connected; }
 
 bool WifiManager::addConnectionHandler(OnConnectedCallback onConnected) {
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < MAX_NUMBER_CALLBACKS; i++) {
     if (mOnConnectedHandlers[i] == nullptr) {
       mOnConnectedHandlers[i] = onConnected;
       return true;
@@ -77,7 +76,7 @@ void WifiManager::onGotIP(const WiFiEventStationModeGotIP &event) {
   mCurrentState = Connected;
   mReconnectCounter = 0;
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < MAX_NUMBER_CALLBACKS; i++) {
     if (mOnConnectedHandlers[i]) {
       mOnConnectedHandlers[i]();
     }
@@ -85,7 +84,7 @@ void WifiManager::onGotIP(const WiFiEventStationModeGotIP &event) {
 }
 
 void WifiManager::checkTimeout() {
-  if (millis() - mLastConnectionAttemptTs >= 5000) {
+  if (millis() - mLastConnectionAttemptTs >= WIFI_CONNECTING_TIMEOUT) {
     mCurrentState = Timeout;
   }
 }
@@ -93,7 +92,7 @@ void WifiManager::checkTimeout() {
 void WifiManager::reconnect() {
   mReconnectCounter++;
 
-  if (mReconnectCounter > 5) {
+  if (mReconnectCounter >= MAX_NUMBER_RECONNECT_TRIES) {
     mCurrentState = Failed;
     ESP.restart();
     return;

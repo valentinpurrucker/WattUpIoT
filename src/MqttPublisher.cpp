@@ -4,10 +4,6 @@
 
 // PUBLIC:
 
-MqttPublisher::MqttPublisher(Scheduler &scheduler) {}
-
-MqttPublisher::MqttPublisher() {}
-
 void MqttPublisher::setup() {
   mConnectedHandler = WiFi.onStationModeGotIP(
       std::bind(&MqttPublisher::onWiFiConnected, this, std::placeholders::_1));
