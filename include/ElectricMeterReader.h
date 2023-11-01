@@ -10,12 +10,12 @@
 #include "Scheduler.h"
 
 struct ObisCode {
-  int8_t mediumCode;
-  int8_t channel;
-  int8_t physicalUnit;
-  int8_t measurementType;
-  int8_t tarrif;
-  int8_t other;
+  u8_t mediumCode;
+  u8_t channel;
+  u8_t physicalUnit;
+  u8_t measurementType;
+  u8_t tarrif;
+  u8_t other;
 };
 
 struct EnergyData {

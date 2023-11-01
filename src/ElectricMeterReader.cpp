@@ -93,7 +93,7 @@ void ElectricMeterReader::sendDataIfAvailable() {
   }
   D_Println("sending");
 
-  char s[60] = {};
+  char s[66] = {};
 
   char pE[12 + 1] = {};
   char cP[5 + 1] = {};
@@ -108,7 +108,9 @@ void ElectricMeterReader::sendDataIfAvailable() {
 
   D_Println(s);
 
-  mMqtt.publish(STR(MQTT_TOPIC), s);
+  char topic[] = STR(MQTT_TOPIC);
+
+  mMqtt.publish(topic, s);
 }
 
 void ElectricMeterReader::printMeterState() {
@@ -278,17 +280,7 @@ void ElectricMeterReader::parseSmlData() {
         std::optional<EnergyMeterObisCodeType> type =
             getEnergyMeterObisCodeTypeFromCode(std::move(code));
 
-        if (entry->value->type == SML_TYPE_OCTET_STRING) {
-          char *str;
-          free(str);
-        } else if (entry->value->type == SML_TYPE_BOOLEAN) {
-          /*
-          D_Printf("%d-%d:%d.%d.%d*%d#%s#\n",
-                        entry->obj_name->str[0], entry->obj_name->str[1],
-                        entry->obj_name->str[2], entry->obj_name->str[3],
-                        entry->obj_name->str[4], entry->obj_name->str[5],
-                        entry->value->data.boolean ? "true" : "false");*/
-        } else if (((entry->value->type & SML_TYPE_FIELD) ==
+        if (((entry->value->type & SML_TYPE_FIELD) ==
                     SML_TYPE_INTEGER) ||
                    ((entry->value->type & SML_TYPE_FIELD) ==
                     SML_TYPE_UNSIGNED)) {
@@ -424,6 +416,10 @@ void ElectricMeterReader::updateEnergyData(std::optional<EnergyData> &data,
       break;
     case CURRENT_ACTIVE_POWER:
       data.value().currentPower = value;
+      break;
+    case MANUFACTURER:
+    case DEVICE_ID:
+    case ENERGY_NEGATIV:
       break;
   }
 }

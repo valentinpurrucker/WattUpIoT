@@ -1,5 +1,7 @@
 #include "Scheduler.h"
 
+#include "Debug.h"
+
 // PUBLIC:
 
 void Scheduler::schedule(int16_t id, TimerCallback cb, u_long time,

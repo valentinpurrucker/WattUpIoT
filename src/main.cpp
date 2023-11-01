@@ -62,7 +62,6 @@ void setup() {
   ntpClient.mOnTimeReceivedCb = std::bind(
       [](u_long _) {
         scheduler.setTimestamp(ntpClient.getUnixTimestamp());
-        mqttPublisher.publish("data/system", "system online");
         eReader.wait();
       },
       std::placeholders::_1);

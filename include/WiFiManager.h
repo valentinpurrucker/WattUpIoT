@@ -8,7 +8,7 @@ class WifiManager {
 
  public:
   static const int8_t MAX_NUMBER_CALLBACKS = 10;
-  static const int8_t WIFI_CONNECTING_TIMEOUT = 5000;
+  static const int WIFI_CONNECTING_TIMEOUT = 5000;
   static const int8_t MAX_NUMBER_RECONNECT_TRIES = 5;
 
   enum WiFiState {

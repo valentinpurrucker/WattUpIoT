@@ -14,10 +14,11 @@ template <typename T>
 struct Task {
   int16_t mId;
 
+  T mCallback;
+
+
   u_long mTime;
   long mTimeout;
-
-  T mCallback;
 
   bool mIsTimestamp;
   bool mIsRetained;
