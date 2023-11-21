@@ -13,16 +13,14 @@ const byte ElectricMeterReader::SML_START_SEQ[] = {0x1B, 0x1B, 0x1B, 0x1B,
                                                    0x01, 0x01, 0x01, 0x01};
 const byte ElectricMeterReader::SML_END_SEQ[] = {0x1B, 0x1B, 0x1B, 0x1B, 0x1A};
 
-ElectricMeterReader::ElectricMeterReader(MqttPublisher &mqtt,
+ElectricMeterReader::ElectricMeterReader(AbstractSerialDevice &serial,
+                                         MqttPublisher &mqtt,
                                          Scheduler &scheduler)
-    : mMqtt(mqtt), mScheduler(scheduler) {}
+    : mSerial(serial), mMqtt(mqtt), mScheduler(scheduler) {}
 
 void ElectricMeterReader::setup() {
   mBufferSize = 3840;
   mBuffer = std::unique_ptr<byte[]>(new byte[mBufferSize]);
-  mEMeterSerial = std::unique_ptr<SoftwareSerial>(new SoftwareSerial(D6));
-  mEMeterSerial->begin(9600, EspSoftwareSerial::SWSERIAL_8N1);
-  pinMode(D6, INPUT);
   reset();
 }
 
@@ -77,8 +75,8 @@ void ElectricMeterReader::wait() {
   resetReadingState();
   mDataReadCallbackCalled = false;
   mCurrentState = Waiting;
-  while (mEMeterSerial->available() > 0) {
-    mEMeterSerial->read();
+  while (mSerial.available() > 0) {
+    mSerial.read();
   }
 }
 
@@ -134,15 +132,9 @@ bool ElectricMeterReader::readSmlData() {
     mReadingState = Timeout;
   }
 
-#if (MODE_SERIAL == 0)
-  if (!Serial.available() && mReadingState != ReadingFinished) {
+  if (!mSerial.available() && mReadingState != ReadingFinished) {
     return true;
   }
-#else
-  if (!mEMeterSerial->available() && mReadingState != ReadingFinished) {
-    return true;
-  }
-#endif
 
   switch (mReadingState) {
     case ReadingState::NotReady:
@@ -172,11 +164,7 @@ bool ElectricMeterReader::readSmlData() {
 }
 
 void ElectricMeterReader::readStartSequence() {
-#if (MODE_SERIAL == 0)
-  byte b = Serial.read();
-#else
-  byte b = mEMeterSerial->read();
-#endif
+  byte b = mSerial.read();
   if (b != -1) {
     mBuffer[mCurrentBufferPosition] = b;
 
@@ -197,11 +185,7 @@ void ElectricMeterReader::readStartSequence() {
 }
 
 void ElectricMeterReader::readMessage() {
-#if (MODE_SERIAL == 0)
-  byte b = Serial.read();
-#else
-  byte b = mEMeterSerial->read();
-#endif
+  byte b = mSerial.read();
   if (b != -1) {
     if ((mCurrentBufferPosition + 3) == mBufferSize) {
       resetReadingState();
@@ -226,11 +210,7 @@ void ElectricMeterReader::readMessage() {
 }
 
 void ElectricMeterReader::readChecksum() {
-#if (MODE_SERIAL == 0)
-  byte b = Serial.read();
-#else
-  byte b = mEMeterSerial->read();
-#endif
+  byte b = mSerial.read();
   if (b != -1 && mChecksumByteNumber > 0) {
     mBuffer[mCurrentBufferPosition++] = b;
     mChecksumByteNumber--;
@@ -280,10 +260,8 @@ void ElectricMeterReader::parseSmlData() {
         std::optional<EnergyMeterObisCodeType> type =
             getEnergyMeterObisCodeTypeFromCode(std::move(code));
 
-        if (((entry->value->type & SML_TYPE_FIELD) ==
-                    SML_TYPE_INTEGER) ||
-                   ((entry->value->type & SML_TYPE_FIELD) ==
-                    SML_TYPE_UNSIGNED)) {
+        if (((entry->value->type & SML_TYPE_FIELD) == SML_TYPE_INTEGER) ||
+            ((entry->value->type & SML_TYPE_FIELD) == SML_TYPE_UNSIGNED)) {
           double value = sml_value_to_double(entry->value);
           int scaler = (entry->scaler) ? *entry->scaler : 0;
           int prec = -scaler;

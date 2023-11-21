@@ -4,10 +4,12 @@
 
 #include "Debug.h"
 #include "ElectricMeterReader.h"
+#include "HardwareSerialDevice.h"
 #include "MqttPublisher.h"
 #include "NtpClient.h"
 #include "OtaController.h"
 #include "Scheduler.h"
+#include "SoftwareSerialDevice.h"
 #include "WiFiManager.h"
 
 Scheduler scheduler;
@@ -18,7 +20,15 @@ MqttPublisher mqttPublisher;
 
 NtpClient ntpClient;
 
-ElectricMeterReader eReader(mqttPublisher, scheduler);
+#ifdef DEBUG
+HardwareSerialDevice espSerial(Serial);
+ElectricMeterReader eReader(espSerial, mqttPublisher, scheduler);
+#else
+SoftwareSerial softwareSerial(D6);
+SoftwareSerialDevice espSoftwareSerial(softwareSerial);
+
+ElectricMeterReader eReader(espSoftwareSerial, mqttPublisher, scheduler);
+#endif
 
 OtaController otaController;
 
@@ -44,6 +54,10 @@ void setup() {
     delay(100);
   }
 
+  #ifndef DEBUG
+    softwareSerial.begin(9600, EspSoftwareSerial::SWSERIAL_8N1);
+  #endif
+
   D_Println(F("----Starting ESP----"));
 
   wifiManager.addConnectionHandler([&]() {
@@ -54,10 +68,6 @@ void setup() {
   wifiManager.addConnectionHandler([&]() { mqttPublisher.setup(); });
 
   wifiManager.addConnectionHandler(std::bind([&]() { otaController.setup(); }));
-
-  wifiManager.addConnectionHandler([&]() {});
-
-  mqttPublisher.mOnConnectedHandler = []() {};
 
   ntpClient.mOnTimeReceivedCb = std::bind(
       [](u_long _) {
