@@ -1,7 +1,7 @@
 #include "Esp8266UdpClient.h"
 
 // PUBLIC:
-Esp8266UdpClient::Esp8266UdpClient() : mUdp(WiFiUDP()){}
+Esp8266UdpClient::Esp8266UdpClient() : mUdp(WiFiUDP()) {}
 
 uint8_t Esp8266UdpClient::begin(uint16_t port) { return mUdp.begin(port); }
 
