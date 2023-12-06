@@ -3,6 +3,9 @@
 #include "Debug.h"
 
 // PUBLIC:
+
+NtpClient::NtpClient(AbstractUdpClient &udpClient) : mUdp(udpClient) {}
+
 void NtpClient::setup() {
   mUdp.begin(123);
   mCurrentState = UdpSetup;

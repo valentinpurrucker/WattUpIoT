@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
+#include "AbstractWiFiClient.h"
+
 class WifiManager {
   using OnConnectedCallback = std::function<void()>;
 
@@ -20,7 +22,7 @@ class WifiManager {
     Failed
   };
 
-  WifiManager() = default;
+  WifiManager(AbstractWiFiClient &wifiClient);
 
   void setup();
 
@@ -43,7 +45,7 @@ class WifiManager {
 
   void reconnect();
 
-  WiFiClient mClient;
+  AbstractWiFiClient &mClient;
 
   WiFiState mCurrentState = WiFiState::Uninitialized;
 

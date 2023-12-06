@@ -2,10 +2,10 @@
 #pragma once
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
 #include <memory.h>
 #include <sml/sml_file.h>
 
+#include "AbstractSerialDevice.h"
 #include "MqttPublisher.h"
 #include "Scheduler.h"
 
@@ -57,7 +57,8 @@ class ElectricMeterReader {
     Timeout,
   };
 
-  ElectricMeterReader(MqttPublisher &mqtt, Scheduler &scheduler);
+  ElectricMeterReader(AbstractSerialDevice &serial, MqttPublisher &mqtt,
+                      Scheduler &scheduler);
 
   void setup();
 
@@ -105,7 +106,7 @@ class ElectricMeterReader {
 
   ReadingState mReadingState = NotReady;
 
-  std::unique_ptr<SoftwareSerial> mEMeterSerial;
+  AbstractSerialDevice &mSerial;
 
   int mLastReadingStartTs = -1;
 

@@ -1,11 +1,11 @@
 #pragma once
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
 #include <espMqttClient.h>
 
 #include <functional>
 
+#include "AbstractWiFiClient.h"
 #include "Scheduler.h"
 
 class MqttPublisher {
@@ -24,7 +24,7 @@ class MqttPublisher {
     MqttConnectionTimeout
   };
 
-  MqttPublisher() = default;
+  MqttPublisher(AbstractWiFiClient &wifiClient);
 
   void setup();
   void loop();
@@ -51,6 +51,8 @@ class MqttPublisher {
   void checkTimeout();
 
   void checkTimeoutTimer();
+
+  AbstractWiFiClient &mWifiClient;
 
   espMqttClient mClient;
 
