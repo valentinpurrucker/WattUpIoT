@@ -2,7 +2,8 @@
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
+
+#include "AbstractUdpClient.h"
 
 class NtpClient {
  public:
@@ -18,6 +19,8 @@ class NtpClient {
     TimeAvailable,
     Timeout,
   };
+
+  NtpClient(AbstractUdpClient &udpClient);
 
   void setup();
 
@@ -38,7 +41,7 @@ class NtpClient {
 
   NtpClientState mCurrentState = Uninitialized;
 
-  WiFiUDP mUdp{};
+  AbstractUdpClient &mUdp;
 
   byte mBuffer[NTP_PACKET_SIZE]{};
 

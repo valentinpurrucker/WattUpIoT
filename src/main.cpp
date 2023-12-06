@@ -11,6 +11,7 @@
 #include "Scheduler.h"
 #include "SoftwareSerialDevice.h"
 #include "WiFiManager.h"
+#include "Esp8266UdpClient.h"
 
 Scheduler scheduler;
 
@@ -18,7 +19,9 @@ WifiManager wifiManager;
 
 MqttPublisher mqttPublisher;
 
-NtpClient ntpClient;
+Esp8266UdpClient udpClient;
+
+NtpClient ntpClient(udpClient);
 
 #ifdef DEBUG
 HardwareSerialDevice espSerial(Serial);
