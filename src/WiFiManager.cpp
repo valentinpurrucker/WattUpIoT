@@ -9,6 +9,9 @@
 
 // PUBLIC:
 
+WifiManager::WifiManager(AbstractWiFiClient &wifiClient)
+    : mClient(wifiClient) {}
+
 void WifiManager::loop() {
   switch (mCurrentState) {
     case Uninitialized:
@@ -54,9 +57,9 @@ bool WifiManager::addConnectionHandler(OnConnectedCallback onConnected) {
 // PRIVATE:
 
 void WifiManager::setup() {
-  mDisconnectedHandler = WiFi.onStationModeDisconnected(
+  mDisconnectedHandler = mClient.onDisconnected(
       std::bind(&WifiManager::onDisconnect, this, std::placeholders::_1));
-  mConnectedHandler = WiFi.onStationModeGotIP(
+  mConnectedHandler = mClient.onGotIP(
       std::bind(&WifiManager::onGotIP, this, std::placeholders::_1));
   connectWiFi();
 }
@@ -64,8 +67,8 @@ void WifiManager::setup() {
 void WifiManager::connectWiFi() {
   mCurrentState = Connecting;
   mLastConnectionAttemptTs = millis();
-  WiFi.mode(WiFiMode_t::WIFI_STA);
-  WiFi.begin(STR(WIFI_NAME), STR(WIFI_PASSWORD));
+  mClient.mode(WiFiMode_t::WIFI_STA);
+  mClient.begin(STR(WIFI_NAME), STR(WIFI_PASSWORD));
 }
 
 void WifiManager::onDisconnect(const WiFiEventStationModeDisconnected &event) {

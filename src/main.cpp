@@ -12,12 +12,15 @@
 #include "SoftwareSerialDevice.h"
 #include "WiFiManager.h"
 #include "Esp8266UdpClient.h"
+#include "Esp8266WiFiClient.h"
 
 Scheduler scheduler;
 
-WifiManager wifiManager;
+Esp8266WiFiClient wifiClient{};
 
-MqttPublisher mqttPublisher;
+WifiManager wifiManager(wifiClient);
+
+MqttPublisher mqttPublisher(wifiClient);
 
 Esp8266UdpClient udpClient;
 

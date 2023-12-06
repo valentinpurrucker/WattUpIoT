@@ -4,10 +4,13 @@
 
 // PUBLIC:
 
+MqttPublisher::MqttPublisher(AbstractWiFiClient &wifiClient)
+    : mWifiClient(wifiClient) {}
+
 void MqttPublisher::setup() {
-  mConnectedHandler = WiFi.onStationModeGotIP(
+  mConnectedHandler = mWifiClient.onGotIP(
       std::bind(&MqttPublisher::onWiFiConnected, this, std::placeholders::_1));
-  mDisconnectedHandler = WiFi.onStationModeDisconnected(std::bind(
+  mDisconnectedHandler = mWifiClient.onDisconnected(std::bind(
       &MqttPublisher::onWiFiDisconnected, this, std::placeholders::_1));
 
   mClient.setServer(STR(MQTT_ADDRESS), MQTT_PORT);
